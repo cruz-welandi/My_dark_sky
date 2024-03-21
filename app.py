@@ -165,3 +165,7 @@ def search():
             })
 
     return render_template("result.html", url_i=url_icon, data=response, date=current_date, temp = temps, low = lows, high = highs, sunrise= sunrises, sunset = sunsets, forecast = forecast_data, forecast_days = days_data)
+
+
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=8080)
