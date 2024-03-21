@@ -5,7 +5,16 @@
             "src":"./index.py",
             "use":"@vercel/python",
             "config": {"runtime": "python3.12"}
+        },
+        { 
+            "src": "*.html", 
+            "use": "@vercel/static" 
+        },
+        { 
+            "src": "*.js", 
+            "use": "@vercel/node"
         }
+
     ],
     "routes":[
         {
