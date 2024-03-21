@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/static/css/main.css">
+        <title>Home</title>
+    </head>
+    <body class="bg-[#2350bb] h-[100vh] p-14">
+        <div class="flex justify-between">
+            <div class="flex flex-col bg-white/10 gap-y-5 w-[60%] h-[52%] rounded-md p-5">
+                <div class="flex flex-col gap-y-2">
+                    <h1 class="text-5xl text-white font-bold">
+                        {{data['name']}}, {{data['sys']['country']}}
+                    </h1>
+                    <p class="text-white text-xl">
+                        {{date}}
+                    </p>
+                </div>
+                <div class="flex">
+                    <div class="flex gap-x-7 border-r-2 pr-14">
+                        <div class="">
+                            <img src="{{url_i}}" alt="" class="">
+                        </div>
+                        <div class="">
+                            <p class="text-7xl text-white font-bold text-center">
+                                {{temp}}°
+                            </p>
+                            <p class="text-2xl text-white">
+                                {{data['weather'][0]['description']}}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-y-5 ml-14 justify-center">
+                        <div class="flex justify-between gap-x-10">
+                            <div class="">
+                                <p class="text-2xl text-white font-bold text-center">
+                                    {{low}}°
+                                </p>
+                                <p class="text-xl text-white">
+                                    Low
+                                </p>
+                            </div>
+                            <div class="">
+                                <p class="text-2xl text-white font-bold text-center">
+                                    {{data['main']['pressure']}} hPa
+                                </p>
+                                <p class="text-xl text-white">
+                                    Pressure
+                                </p>
+                            </div>
+                            <div class="">
+                                <p class="text-2xl text-white font-bold text-center">
+                                    {{sunrise}}
+                                </p>
+                                <p class="text-xl text-white">
+                                    Sunrise
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between gap-x-10">
+                            <div class="">
+                                <p class="text-2xl text-white font-bold text-center">
+                                    {{high}}°
+                                </p>
+                                <p class="text-xl text-white">
+                                    High
+                                </p>
+                            </div>
+                            <div class="">
+                                <p class="text-2xl text-white font-bold text-center">
+                                    {{data['main']['humidity']}}%
+                                </p>
+                                <p class="text-xl text-white">
+                                    Humidity
+                                </p>
+                            </div>
+                            <div class="">
+                                <p class="text-2xl text-white font-bold text-center">
+                                    {{sunset}}
+                                </p>
+                                <p class="text-xl text-white">
+                                    Sunset
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-center mt-8">
+                <form action="/traitement" method="post" class="flex gap-x-4">
+                    <input type="search"  name="search_value" class="h-[65px] w-[250px] rounded-md outline-none text-2xl text-center px-3" placeholder="country or city"/>
+                    <button type="submit" class="bg-white/10 rounded-md  text-white font-bold text-xl text-center h-[65px] w-[100px]">
+                        search
+                    </button>
+                </form>
+            </div>
+        </div>
+           <h1 class="text-3xl text-white mt-10 mb-2">
+                Todays weather
+           </h1>
+        <div class="flex gap-x-5 justify-between">
+            {% for day in forecast %}
+            <div class="flex flex-col gap-y-1 bg-white/10 p-3 rounded-md justify-center items-center text-white text-xl drop-shadow-lg">
+                <p >  {{ day.day }}</p>
+                <img src="{{day.url_icon_forecast}}" alt="url_icon_forecast">
+                <p> {{ day.temp }}°</p>
+            </div>
+            {% endfor %}
+        </div>
+    </body>
+</html>
