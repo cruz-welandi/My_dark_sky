@@ -52,7 +52,7 @@ def home():
 
 
 @app.route("/traitement", methods=["POST"])
-@cache.cached(timeout=300)
+#@cache.cached(timeout=300)
 def traitement():
     global API_KEY
     data = request.form
@@ -110,7 +110,7 @@ def traitement():
 
 
 @app.route("/search", methods=["POST"])
-@cache.cached(timeout=300)
+#@cache.cached(timeout=300)
 def search():
     global API_KEY
     data = request.form
