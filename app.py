@@ -22,13 +22,20 @@ def current_wather(url):
     highs = int(response['main']['temp_max']-273.15)
     return response, id_icon, temps, current_date, lows, highs
 
+def get_ip_address(domain_name):
+    """Récupère l'adresse IP du nom de domaine spécifié."""
+    try:
+        return socket.gethostbyname(domain_name)
+    except socket.gaierror as e:
+        return f"Erreur lors de la récupération de l'IP : {e}"
+    
 
 @app.route("/")
 @cache.cached(timeout=300)
 def home():
     global API_KEY
     domain_name="my-dark-sky.onrender.com"
-    ip = socket.gethostbyname(domain_name)
+    ip = get_ip_address(domain_name)
     url_ip="https://ipinfo.io/{}?token=4bdb60e14a4fcc".format(ip)
     response_ip = requests.get(url_ip).json()
     name_city = response_ip.get("city")
