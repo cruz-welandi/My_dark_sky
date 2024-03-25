@@ -53,7 +53,7 @@ def home():
         })
 
 
-    return json.dumps(ip)
+    return render_template("index.html", url_i=url_icon, data=response, date=current_date, temp = temps, low = lows, high = highs, sunrise= sunrises, sunset = sunsets, forecast = forecast_data )
 
 
 @app.route("/traitement", methods=["POST"])
