@@ -53,7 +53,7 @@ def home():
         })
 
 
-    return ip
+    return json.dumps(ip)
 
 
 @app.route("/traitement", methods=["POST"])
