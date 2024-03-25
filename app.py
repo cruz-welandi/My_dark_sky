@@ -3,6 +3,7 @@ from flask import Flask, render_template, request
 import datetime
 from flask_caching import Cache
 import json
+import socket
 import time
 
 app = Flask(__name__)
@@ -26,7 +27,8 @@ def current_wather(url):
 @cache.cached(timeout=300)
 def home():
     global API_KEY
-    ip = request.headers.request.headers.get('X-Real-IP')
+    domain_name="my-dark-sky.onrender.com"
+    ip = socket.gethostbyname(domain_name)
     url_ip="https://ipinfo.io/{}?token=4bdb60e14a4fcc".format(ip)
     response_ip = requests.get(url_ip).json()
     name_city = response_ip.get("city")
