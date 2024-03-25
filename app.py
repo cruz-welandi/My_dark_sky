@@ -26,7 +26,11 @@ def current_wather(url):
 @app.route("/")
 def home():
     global API_KEY
-    name_city = 'LEKONI'
+    ip = request.remote_addr
+    url_ip="ipinfo.io/{}?token=4bdb60e14a4fcc".format(ip)
+    response_ip = requests.get(url_ip).json()
+    name_city = response_ip['city']
+
     url_current ="https://api.openweathermap.org/data/2.5/weather?q={}&APPID={}".format(name_city, API_KEY )
     response, id_icon, temps, current_date, lows, highs = current_wather(url_current)
 
