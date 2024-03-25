@@ -26,7 +26,7 @@ def current_wather(url):
 @cache.cached(timeout=300)
 def home():
     global API_KEY
-    ip = request.remote_addr
+    ip = request.headers.get('X-Forwarded-For').split(',')[0].strip()
     url_ip="https://ipinfo.io/{}?token=4bdb60e14a4fcc".format(ip)
     response_ip = requests.get(url_ip).json()
     name_city = response_ip.get("city")
@@ -52,7 +52,8 @@ def home():
             'url_icon_forecast': " https://openweathermap.org/img/wn/"+item['weather'][0]['icon']+"@2x.png"
         })
 
-    return render_template("index.html", url_i=url_icon, data=response, date=current_date, temp = temps, low = lows, high = highs, sunrise= sunrises, sunset = sunsets, forecast = forecast_data )
+
+    return json.dumps(response_ip)
 
 
 @app.route("/traitement", methods=["POST"])
