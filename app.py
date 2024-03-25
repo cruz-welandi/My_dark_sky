@@ -6,8 +6,7 @@ import json
 import time
 
 app = Flask(__name__)
-cache = Cache(config={'CACHE_TYPE': 'simple'})
-cache.init_app(app)
+cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 
 API_KEY = "892ec09e650614bee278f3854735b995"
 
@@ -24,6 +23,7 @@ def current_wather(url):
 
 
 @app.route("/")
+@cache.cached(timeout=300)
 def home():
     global API_KEY
     ip = request.remote_addr
@@ -56,7 +56,7 @@ def home():
 
 
 @app.route("/traitement", methods=["POST"])
-#@cache.cached(timeout=300)
+@cache.cached(timeout=300)
 def traitement():
     global API_KEY
     data = request.form
@@ -114,7 +114,7 @@ def traitement():
 
 
 @app.route("/search", methods=["POST"])
-#@cache.cached(timeout=300)
+@cache.cached(timeout=300)
 def search():
     global API_KEY
     data = request.form
