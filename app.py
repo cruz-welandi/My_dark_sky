@@ -20,7 +20,60 @@ def current_wather(url):
     temps = int(response['main']['temp']-273.15)
     lows = int(response['main']['temp_min']-273.15)
     highs = int(response['main']['temp_max']-273.15)
-    return response, id_icon, temps, current_date, lows, highs
+
+    data = {
+        'id_icon': id_icon,
+        'current_date': current_date,
+        'temps': temps,
+        'lows': lows,
+        'highs': highs,
+        'response': response
+    }
+    return data
+
+def forcast_7days(url):
+    data=[]
+    response_forecast_7days = requests.get(url).json()
+    for item in response_forecast_7days['list']:
+        dt_txt = item['dt_txt']
+        date, times = dt_txt.split(' ')
+        year, month, day= date.split('-')
+        if times == '12:00:00':
+            dt = datetime.datetime.strptime(date, "%Y-%m-%d")
+            day_name = dt.strftime('%a').capitalize()
+            formatted_date = f"{day}/{month}"
+            temp = item['main']['temp']
+            humidity = item['main']['humidity']
+            pressure = item['main']['pressure']
+            low = item['main']['temp_min']
+            high = item['main']['temp_max']
+
+            data.append({
+                'date': formatted_date,
+                'day': day_name,
+                'low': low,
+                'high': high,
+                'temp': temp,
+                'humidity': humidity,
+                'pressure': pressure,
+                'url_icon_forecast_7days': " https://openweathermap.org/img/wn/"+item['weather'][0]['icon']+"@2x.png"
+            })
+    
+    return data
+
+def forcast(url):
+    data=[]
+    response_forecast = requests.get(url).json()
+    for item in response_forecast['list']:
+        dt = datetime.datetime.strptime(item['dt_txt'], '%Y-%m-%d %H:%M:%S')
+        day_abbr = dt.strftime("%H %p").lower()
+        data.append({
+            'day': day_abbr,
+            'temp': item['main']['temp'],
+            'url_icon_forecast': " https://openweathermap.org/img/wn/"+item['weather'][0]['icon']+"@2x.png"
+        })
+    
+    return data
 
 
 @app.route("/")
@@ -29,28 +82,19 @@ def home():
     global API_KEY
     name_city = "LEKONI"
     url_current ="https://api.openweathermap.org/data/2.5/weather?q={}&APPID={}".format(name_city, API_KEY )
-    response, id_icon, temps, current_date, lows, highs = current_wather(url_current)
+    data_current = current_wather(url_current)
 
-    url_icon=" https://openweathermap.org/img/wn/{}@2x.png".format(id_icon)
+    url_icon=" https://openweathermap.org/img/wn/{}@2x.png".format(data_current['id_icon'])
 
-    sunrises = time.strftime("%I:%M", time.gmtime(response['sys']['sunrise']-21600))
-    sunsets = time.strftime("%I:%M", time.gmtime(response['sys']['sunset']-21600))
+    sunrises = time.strftime("%I:%M", time.gmtime(data_current['response']['sys']['sunrise']-21600))
+    sunsets = time.strftime("%I:%M", time.gmtime(data_current['response']['sys']['sunset']-21600))
 
-    city = response['name']
+    city = data_current['response']['name']
     url_forecast = "https://api.openweathermap.org/data/2.5/forecast?q={}&units=metric&cnt=7&appid={}".format(city, API_KEY)
-    response_forecast = requests.get(url_forecast).json()
-    forecast_data=[]
-    for item in response_forecast['list']:
-        dt = datetime.datetime.strptime(item['dt_txt'], '%Y-%m-%d %H:%M:%S')
-        day_abbr = dt.strftime("%H %p").lower()
-        forecast_data.append({
-            'day': day_abbr,
-            'temp': item['main']['temp'],
-            'url_icon_forecast': " https://openweathermap.org/img/wn/"+item['weather'][0]['icon']+"@2x.png"
-        })
+    forecast_data = forcast(url_forecast)
 
 
-    return render_template("index.html", url_i=url_icon, data=response, date=current_date, temp = temps, low = lows, high = highs, sunrise= sunrises, sunset = sunsets, forecast = forecast_data )
+    return render_template("index.html", url_i=url_icon, data=data_current['response'], date=data_current['current_date'], temp = data_current['temps'], low = data_current['lows'], high = data_current['highs'], sunrise= sunrises, sunset = sunsets, forecast = forecast_data )
 
 
 @app.route("/traitement", methods=["POST"])
@@ -60,113 +104,21 @@ def traitement():
     data = request.form
     name_city = data.get('search_value')
     url_current ="https://api.openweathermap.org/data/2.5/weather?q={}&APPID={}".format(name_city, API_KEY )
-    response, id_icon, temps, current_date, lows, highs = current_wather(url_current)
+    data_current = current_wather(url_current)
 
-    url_icon=" https://openweathermap.org/img/wn/{}@2x.png".format(id_icon)
+    url_icon=" https://openweathermap.org/img/wn/{}@2x.png".format(data_current['id_icon'])
 
-    sunrises = time.strftime("%I:%M", time.gmtime(response['sys']['sunrise']-21600))
-    sunsets = time.strftime("%I:%M", time.gmtime(response['sys']['sunset']-21600))
+    sunrises = time.strftime("%I:%M", time.gmtime(data_current['response']['sys']['sunrise']-21600))
+    sunsets = time.strftime("%I:%M", time.gmtime(data_current['response']['sys']['sunset']-21600))
 
-    city = response['name']
+    city = data_current['response']['name']
     url_forecast = "https://api.openweathermap.org/data/2.5/forecast?q={}&units=metric&cnt=7&appid={}".format(city, API_KEY)
-    response_forecast = requests.get(url_forecast).json()
-    forecast_data=[]
-    for item in response_forecast['list']:
-        dt = datetime.datetime.strptime(item['dt_txt'], '%Y-%m-%d %H:%M:%S')
-        day_abbr = dt.strftime("%H %p").lower()
-        forecast_data.append({
-            'day': day_abbr,
-            'temp': item['main']['temp'],
-            'url_icon_forecast': " https://openweathermap.org/img/wn/"+item['weather'][0]['icon']+"@2x.png"
-        })
+    forecast_data = forcast(url_forecast)
 
-    days_data = []
     url_forecast_7days = "https://api.openweathermap.org/data/2.5/forecast?q={}&units=metric&cnt=56&appid={}".format(city, API_KEY)
-    response_forecast_7days = requests.get(url_forecast_7days).json()
-    for item in response_forecast_7days['list']:
-        dt_txt = item['dt_txt']
-        date, times = dt_txt.split(' ')
-        year, month, day= date.split('-')
-        if times == '12:00:00':
-            dt = datetime.datetime.strptime(date, "%Y-%m-%d")
-            day_name = dt.strftime('%a').capitalize()
-            formatted_date = f"{day}/{month}"
-            temp = item['main']['temp']
-            humidity = item['main']['humidity']
-            pressure = item['main']['pressure']
-            low = item['main']['temp_min']
-            high = item['main']['temp_max']
+    days_data = forcast_7days(url_forecast_7days)
 
-            days_data.append({
-                'date': formatted_date,
-                'day': day_name,
-                'low': low,
-                'high': high,
-                'temp': temp,
-                'humidity': humidity,
-                'pressure': pressure,
-                'url_icon_forecast_7days': " https://openweathermap.org/img/wn/"+item['weather'][0]['icon']+"@2x.png"
-            })
-
-    return render_template("result.html", url_i=url_icon, data=response, date=current_date, temp = temps, low = lows, high = highs, sunrise= sunrises, sunset = sunsets, forecast = forecast_data, forecast_days = days_data)
-
-
-@app.route("/search", methods=["POST"])
-@cache.cached(timeout=300)
-def search():
-    global API_KEY
-    data = request.form
-    name_city = data.get('search_value')
-    url_current ="https://api.openweathermap.org/data/2.5/weather?q={}&APPID={}".format(name_city, API_KEY )
-    response, id_icon, temps, current_date, lows, highs = current_wather(url_current)
-
-    url_icon=" https://openweathermap.org/img/wn/{}@2x.png".format(id_icon)
-
-    sunrises = time.strftime("%I:%M", time.gmtime(response['sys']['sunrise']-21600))
-    sunsets = time.strftime("%I:%M", time.gmtime(response['sys']['sunset']-21600))
-
-    city = response['name']
-    url_forecast = "https://api.openweathermap.org/data/2.5/forecast?q={}&units=metric&cnt=7&appid={}".format(city, API_KEY)
-    response_forecast = requests.get(url_forecast).json()
-    forecast_data=[]
-    for item in response_forecast['list']:
-        dt = datetime.datetime.strptime(item['dt_txt'], '%Y-%m-%d %H:%M:%S')
-        day_abbr = dt.strftime("%H %p").lower()
-        forecast_data.append({
-            'day': day_abbr,
-            'temp': item['main']['temp'],
-            'url_icon_forecast': " https://openweathermap.org/img/wn/"+item['weather'][0]['icon']+"@2x.png"
-        })
-
-    days_data = []
-    url_forecast_7days = "https://api.openweathermap.org/data/2.5/forecast?q={}&units=metric&cnt=56&appid={}".format(city, API_KEY)
-    response_forecast_7days = requests.get(url_forecast_7days).json()
-    for item in response_forecast_7days['list']:
-        dt_txt = item['dt_txt']
-        date, times = dt_txt.split(' ')
-        year, month, day= date.split('-')
-        if times == '12:00:00':
-            dt = datetime.datetime.strptime(date, "%Y-%m-%d")
-            day_name = dt.strftime('%a').capitalize()
-            formatted_date = f"{day}/{month}"
-            temp = item['main']['temp']
-            humidity = item['main']['humidity']
-            pressure = item['main']['pressure']
-            low = item['main']['temp_min']
-            high = item['main']['temp_max']
-
-            days_data.append({
-                'date': formatted_date,
-                'day': day_name,
-                'low': low,
-                'high': high,
-                'temp': temp,
-                'humidity': humidity,
-                'pressure': pressure,
-                'url_icon_forecast_7days': " https://openweathermap.org/img/wn/"+item['weather'][0]['icon']+"@2x.png"
-            })
-
-    return render_template("result.html", url_i=url_icon, data=response, date=current_date, temp = temps, low = lows, high = highs, sunrise= sunrises, sunset = sunsets, forecast = forecast_data, forecast_days = days_data)
+    return render_template("result.html", url_i=url_icon, data=data_current['response'], date=data_current['current_date'], temp = data_current['temps'], low = data_current['lows'], high = data_current['highs'], sunrise= sunrises, sunset = sunsets, forecast = forecast_data, forecast_days = days_data)
 
 
 if __name__ == "__main__":
