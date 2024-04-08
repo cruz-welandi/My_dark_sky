@@ -15,65 +15,85 @@ API_KEY = "892ec09e650614bee278f3854735b995"
 def current_wather(url):
     current_date = datetime.datetime.today()
     current_date = current_date.strftime("%A %d %B")
-    response = requests.get(url).json()
-    id_icon = response["weather"][0]["icon"]
-    temps = int(response['main']['temp']-273.15)
-    lows = int(response['main']['temp_min']-273.15)
-    highs = int(response['main']['temp_max']-273.15)
+    try: 
+        response = requests.get(url).json()
 
-    data = {
-        'id_icon': id_icon,
-        'current_date': current_date,
-        'temps': temps,
-        'lows': lows,
-        'highs': highs,
-        'response': response
-    }
-    return data
+        if response.status_code == 200:
+            id_icon = response["weather"][0]["icon"]
+            temps = int(response['main']['temp']-273.15)
+            lows = int(response['main']['temp_min']-273.15)
+            highs = int(response['main']['temp_max']-273.15)
+
+            data = {
+                'id_icon': id_icon,
+                'current_date': current_date,
+                'temps': temps,
+                'lows': lows,
+                'highs': highs,
+                'response': response
+            }
+            return data
+        else:
+            return {"error": "API request failed with status code: {}".format(response.status_code)}
+    except requests.exceptions.RequestException as e:
+        return {"error": "Request failed: {}".format(e)}   
+        
 
 def forcast_7days(url):
     data=[]
-    response_forecast_7days = requests.get(url).json()
-    for item in response_forecast_7days['list']:
-        dt_txt = item['dt_txt']
-        date, times = dt_txt.split(' ')
-        year, month, day= date.split('-')
-        if times == '12:00:00':
-            dt = datetime.datetime.strptime(date, "%Y-%m-%d")
-            day_name = dt.strftime('%a').capitalize()
-            formatted_date = f"{day}/{month}"
-            temp = item['main']['temp']
-            humidity = item['main']['humidity']
-            pressure = item['main']['pressure']
-            low = item['main']['temp_min']
-            high = item['main']['temp_max']
+    try:
+        response_forecast_7days = requests.get(url).json()
 
-            data.append({
-                'date': formatted_date,
-                'day': day_name,
-                'low': low,
-                'high': high,
-                'temp': temp,
-                'humidity': humidity,
-                'pressure': pressure,
-                'url_icon_forecast_7days': " https://openweathermap.org/img/wn/"+item['weather'][0]['icon']+"@2x.png"
-            })
-    
-    return data
+        if response_forecast_7days.status_code == 200: 
+            for item in response_forecast_7days['list']:
+                dt_txt = item['dt_txt']
+                date, times = dt_txt.split(' ')
+                year, month, day= date.split('-')
+                if times == '12:00:00':
+                    dt = datetime.datetime.strptime(date, "%Y-%m-%d")
+                    day_name = dt.strftime('%a').capitalize()
+                    formatted_date = f"{day}/{month}"
+                    temp = item['main']['temp']
+                    humidity = item['main']['humidity']
+                    pressure = item['main']['pressure']
+                    low = item['main']['temp_min']
+                    high = item['main']['temp_max']
+
+                    data.append({
+                        'date': formatted_date,
+                        'day': day_name,
+                        'low': low,
+                        'high': high,
+                        'temp': temp,
+                        'humidity': humidity,
+                        'pressure': pressure,
+                        'url_icon_forecast_7days': " https://openweathermap.org/img/wn/"+item['weather'][0]['icon']+"@2x.png"
+                    })
+            return data
+        else:
+            return {"error": "API request failed with status code: {}".format(response_forecast_7days.status_code)}
+    except requests.exceptions.RequestException as e:
+        return {"error": "Request failed: {}".format(e)} 
 
 def forcast(url):
     data=[]
-    response_forecast = requests.get(url).json()
-    for item in response_forecast['list']:
-        dt = datetime.datetime.strptime(item['dt_txt'], '%Y-%m-%d %H:%M:%S')
-        day_abbr = dt.strftime("%H %p").lower()
-        data.append({
-            'day': day_abbr,
-            'temp': item['main']['temp'],
-            'url_icon_forecast': " https://openweathermap.org/img/wn/"+item['weather'][0]['icon']+"@2x.png"
-        })
-    
-    return data
+    try: 
+        response_forecast = requests.get(url).json()
+        if response_forecast.status_code == 200:
+            for item in response_forecast['list']:
+                dt = datetime.datetime.strptime(item['dt_txt'], '%Y-%m-%d %H:%M:%S')
+                day_abbr = dt.strftime("%H %p").lower()
+                data.append({
+                    'day': day_abbr,
+                    'temp': item['main']['temp'],
+                    'url_icon_forecast': " https://openweathermap.org/img/wn/"+item['weather'][0]['icon']+"@2x.png"
+                })
+            
+            return data
+        else:
+            return {"error": "API request failed with status code: {}".format(response_forecast.status_code)}
+    except requests.exceptions.RequestException as e:
+        return {"error": "Request failed: {}".format(e)} 
 
 
 @app.route("/")
