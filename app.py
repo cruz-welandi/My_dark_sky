@@ -100,7 +100,6 @@ def forcast(url):
 
 
 @app.route("/")
-@cache.cached(timeout=300)
 def home():
     global API_KEY
     name_city = "LEKONI"
@@ -126,7 +125,6 @@ def home():
 
 
 @app.route("/traitement", methods=["POST"])
-@cache.cached(timeout=300)
 def traitement():
     global API_KEY
     data = request.form
